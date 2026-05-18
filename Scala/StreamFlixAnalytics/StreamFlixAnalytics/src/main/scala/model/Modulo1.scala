@@ -1,21 +1,18 @@
 package com.streamflix
+package model
 
-import org.apache.spark
-import org.apache.spark.sql.catalyst.dsl.expressions.longToLiteral
 import org.apache.spark.{SparkConf, SparkContext}
-import org.apache.spark.sql.SparkSession
 
 object Modulo1 {
 
-  def main(args: Array[String]): Unit = {
-
-
+  def ejecutar(): Unit = {
 
     val conf = new SparkConf()
       .setAppName("StreamFlix")
       .setMaster("local[*]")
 
     val sc = new SparkContext(conf)
+    sc.setLogLevel("ERROR")
 
 
     val rdd = sc.textFile("src/main/resources/data/server_logs.txt")
@@ -33,12 +30,12 @@ object Modulo1 {
 
     // Tarea 2: Mapear para extraer (Nivel, Mensaje)
     println("Tarea 2")
-    val nivel_mensaje = rdd_filtrado_Error.map(linea => {
+    val nivelMensaje = rdd_filtrado_Error.map(linea => {
       val nivel = linea.split(" ")(0)
       val mensaje = linea.split("\\|").last
       (nivel,mensaje)
     })
-    nivel_mensaje.take(20).foreach(println)
+    nivelMensaje.take(20).foreach(println)
 
     // Tarea 3: Contar cuántos errores de tipo 503 ocurrieron usando RDD actions (count, filter)
     println("Tarea 3")
@@ -55,22 +52,22 @@ object Modulo1 {
 
     // Validación Manual:
     // El alumno debe imprimir en consola el número exacto de líneas descartadas (corruptas).
-    val rdd_corrupto = rdd.filter(linea => !linea.startsWith("["))
-    val lienas_corruptas = rdd_corrupto.count()
-    println(s"Hay $lienas_corruptas filas corruptas")
+    val rddCorrupto = rdd.filter(linea => !linea.startsWith("["))
+    val lienasCorruptas = rddCorrupto.count()
+    println(s"Hay $lienasCorruptas filas corruptas")
 
     // Debe generar un archivo de texto simple output/error_counts que contenga pares
     //(Código, Cantidad).
 
-    val error_clave_valor_1 = rdd_filtrado_Error.map(linea => linea.split("\\|")(2))
+    val errorClaveValor1 = rdd_filtrado_Error.map(linea => linea.split("\\|")(2))
 
-    val error_clave_valor = error_clave_valor_1.map(linea => linea.split(":")(1))
+    val errorClaveValor = errorClaveValor1.map(linea => linea.split(":")(1))
 
-    val pares_clave_valor = error_clave_valor.map(word => (word,1))
+    val paresClaveValor = errorClaveValor.map(word => (word,1))
 
-    val error_counts = pares_clave_valor.reduceByKey((a,b)=>a+b)
+    val errorCounts = paresClaveValor.reduceByKey((a,b)=>a+b)
     // Si no pongo coalesce(1), me genera varios archivos
-    error_counts.coalesce(1).saveAsTextFile("src/main/resources/output/error_counts")
+    errorCounts.coalesce(1).saveAsTextFile("src/main/resources/output/error_counts")
 
   }
 }

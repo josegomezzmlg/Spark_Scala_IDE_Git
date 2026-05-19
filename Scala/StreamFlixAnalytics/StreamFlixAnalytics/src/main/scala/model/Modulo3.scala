@@ -51,6 +51,8 @@ object Modulo3 {
     val dfSm = logsDF.join(broadcast(moviesDF),
       logsDF("movie_id")===moviesDF("id"),"inner")
     val df_sm_1 = dfSm.select("user_id","title","genres","duration_watched","movie_id","id").sort("id")
+
+
     df_sm_1.show()
     df_sm_1.explain(true)
 

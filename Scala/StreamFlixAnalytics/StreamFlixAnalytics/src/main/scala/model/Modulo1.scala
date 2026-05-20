@@ -5,7 +5,7 @@ import org.apache.spark.{SparkConf, SparkContext}
 
 object Modulo1 {
 
-  def ejecutar(): Unit = {
+  def execute(): Unit = {
 
     val conf = new SparkConf()
       .setAppName("StreamFlix")

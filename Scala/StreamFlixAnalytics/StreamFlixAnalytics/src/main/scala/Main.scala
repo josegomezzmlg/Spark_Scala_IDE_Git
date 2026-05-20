@@ -1,11 +1,18 @@
 package com.streamflix
 
-import model.{Modulo1, Modulo2, Modulo3, Modulo4, Modulo5}
+import model.{Modulo1, Modulo2, Modulo3, Modulo4, Modulo5, Modulo5_1}
+
+import org.apache.spark.sql.SparkSession
 
 
 object Main {
 
   def main(args: Array[String]): Unit = {
+
+    val spark = SparkSession.builder()
+      .appName("StreamFlixAnalytics")
+      .master("local[*]")
+      .getOrCreate()
 
     println("STREAMFLIX ANALYTICS")
     println("===================================")
@@ -24,23 +31,27 @@ object Main {
 
       case 1 =>
         println("Ejecutando Módulo 1...")
-        Modulo1.ejecutar()
+        Modulo1.execute()
 
       case 2 =>
         println("Ejecutando Módulo 2...")
-        Modulo2.ejecutar()
+        Modulo2.execute(spark)
 
       case 3 =>
         println("Ejecutando Módulo 3...")
-        Modulo3.ejecutar()
+        Modulo3.execute(spark)
 
       case 4 =>
         println("Ejecutando Módulo 4...")
-        Modulo4.ejecutar()
+        Modulo4.execute(spark)
 
       case 5 =>
         println("Ejecutando Módulo 5...")
-        Modulo5.ejecutar()
+        Modulo5.execute(spark)
+
+      case 6 =>
+        println("Ejecutando Módulo 5_1...")
+        Modulo5_1.execute(spark)
 
       case _ =>
         println("Opción no válida")

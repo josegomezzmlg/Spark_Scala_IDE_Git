@@ -1,31 +1,46 @@
 package com.streamflix
 package model
 
-import org.apache.spark.sql.SparkSession
+import com.streamflix.functions.functions.limpiarInfo
+import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.apache.spark.sql.expressions.Window
 import org.apache.spark.sql.functions._
 
-
 object Modulo4 {
 
-  def ejecutar(): Unit = {
-
-    val spark = SparkSession.builder()
-      .appName("StreamFlix")
-      .master("local[*]")
-      .getOrCreate()
+  def execute(spark: SparkSession): Unit = {
 
     spark.sparkContext.setLogLevel("ERROR")
+    val pathLog = "src/main/resources/data/server_logs.txt"
 
-    val rawDF = spark.read.text("src/main/resources/data/server_logs.txt")
+    val rawDF = loadData(spark,pathLog)
+    val dfDiffence = differenceTimestampPrevTime(CleanLogs(rawDF))
+    val dfTop10 = top10(calculationSessions(dfDiffence))
+    val df3MoreAddicts = addicts3(dfTop10)
+
+    println("diferencia en minutos entre 'timestamp' y 'prev_timestamp'")
+    dfDiffence.show()
+    println("Top 10 Binge Watchers")
+    dfTop10.show()
+    println("3 usuarios más adictos.")
+    df3MoreAddicts.show()
+
+  }
+
+  def loadData(spark: SparkSession, pathLog: String): (DataFrame) = {
+
+      val rawDF = spark.read.text(pathLog)
+
+      rawDF
+    }
+
+  def CleanLogs(rawDF: DataFrame): DataFrame= {
 
     val infoDF = rawDF.filter(col("value").startsWith("[INFO]"))
 
-    val dfInfoSeparado = infoDF.withColumn("nivel", split(col("value"), "\\|")(0))
-      .withColumn("userId", split(col("value"), "\\|")(1))
-      .withColumn("movieId", split(col("value"), "\\|")(2))
-      .withColumn("durationWatched", split(col("value"), "\\|")(3))
-      .drop(col("value"))
+    // Uso de la funcion LimpiarInfo, usada en los modulos 3,4 y 5
+
+    val dfInfoSeparado = limpiarInfo(infoDF).drop(col("value"))
 
     val dfInfoSeparado2 = dfInfoSeparado
       .withColumn("timestampStr",concat_ws(" ", split(col("nivel"), " ")(1), split(col("nivel"), " ")(2)))
@@ -43,9 +58,11 @@ object Modulo4 {
       .filter(col("timestamp").isNotNull)
       .filter(col("durationWatched").isNotNull)
 
-    logsDF.show(false)
+    logsDF
 
-    // Binge = Maraton
+  }
+
+  def differenceTimestampPrevTime(logsDF:DataFrame):DataFrame = {
 
     val windowSpec = Window.partitionBy("userId").orderBy("timestamp")
 
@@ -54,19 +71,20 @@ object Modulo4 {
       .withColumn("prevDurationWatched", lag("durationWatched", 1).over(windowSpec))
 
     val bingeDF = lagDF.withColumn(
-        "pauseMinutes",(unix_timestamp(col("timestamp")) - unix_timestamp(col("prevTimestamp"))
-          ) / 60 - col("prevDurationWatched")
-      ).withColumn("isBinge",when(col("pauseMinutes") >= 0 && col("pauseMinutes") < 20, 1).otherwise(0))
+      "pauseMinutes",(unix_timestamp(col("timestamp")) - unix_timestamp(col("prevTimestamp"))
+        ) / 60 - col("prevDurationWatched")
+    ).withColumn("isBinge",when(col("pauseMinutes") >= 0 && col("pauseMinutes") < 20, 1).otherwise(0))
 
-    println("Diferencia en minutos entre timestamp y prev_timestamp")
-    println("Creacion de la columna \"is_binge\" si la diferencia < 20 mins")
-    bingeDF.show()
+    bingeDF
 
-    val sessionWindow = Window.partitionBy("userId").orderBy("timestamp")
+  }
+
+  def calculationSessions(bingeDF:DataFrame):DataFrame= {
+    val windowSpec = Window.partitionBy("userId").orderBy("timestamp")
 
     val sessionDF = bingeDF.withColumn("newSession",
         when(col("isBinge") === 1, 0).otherwise(1))
-      .withColumn("sessionId",sum(col("newSession")).over(sessionWindow))
+      .withColumn("sessionId",sum(col("newSession")).over(windowSpec))
 
     val bingeDF2 = sessionDF.groupBy("userId", "sessionId")
       .agg(
@@ -76,9 +94,12 @@ object Modulo4 {
         sum("durationWatched").alias("totalWatchMinutes")
       ).filter(col("itemsWatched") > 3)
 
-    bingeDF2.show()
+    bingeDF2
 
-    println("Top 10 Binge Watchers")
+  }
+
+  def top10(bingeDF2:DataFrame):DataFrame= {
+
     val top10BingeWatchersDF = bingeDF2
       .groupBy("userId")
       .agg(
@@ -87,13 +108,13 @@ object Modulo4 {
         sum("totalWatchMinutes").alias("totalWatchMinutes")
       ).orderBy(desc("bingeSessions"),desc("totalItemsWatched")).limit(10)
 
-    top10BingeWatchersDF.show(false)
+    top10BingeWatchersDF
+  }
 
-    println("Top 3 usuarios más adictos ")
+  def addicts3(top10BingeWatchersDF:DataFrame):DataFrame= {
     val top3AdictosDF = top10BingeWatchersDF
       .orderBy(desc("totalWatchMinutes")).limit(3)
 
-    top3AdictosDF.show(false)
-
+    top3AdictosDF
   }
 }

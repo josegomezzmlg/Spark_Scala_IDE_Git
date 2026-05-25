@@ -7,6 +7,7 @@ import org.apache.spark.sql.types.{LongType, StringType, StructField, StructType
 
 object Modulo2 {
   def execute(spark: SparkSession): Unit = {
+    // Si no pongo el SetLogLevel me aparecen todas las lineas de INFO
     spark.sparkContext.setLogLevel("ERROR")
     val pathMovies = "src/main/resources/data/movies_metadata.csv"
     val dfMovies = loadData(spark,pathMovies)
@@ -23,7 +24,7 @@ object Modulo2 {
 
 
   }
-    // Si no pongo el SetLogLevel me aparecen todas las lineas de INFO
+
 
   def loadData(spark: SparkSession, pathMovies: String): ( DataFrame) = {
 
@@ -80,10 +81,12 @@ object Modulo2 {
     (dfNulos,dfDuplicados)
   }
 
+  // TODO: Manejar nulos en 'genres' reemplazando por "Unknown"
+  // Cuando tenga que cambiar valores null que no esten declarados como String, usar funcion na.fill
+  // Si no pongo Seq("nombre_columna"), cambiaria todos los null de todas las columnas
+
   def reemplazo(dfClean:DataFrame):DataFrame= {
-    // TODO: Manejar nulos en 'genres' reemplazando por "Unknown"
-    // Cuando tenga que cambiar valores null que no esten declarados como String, usar funcion na.fill
-    // Si no pongo Seq("nombre_columna"), cambiaria todos los null de todas las columnas
+
     val nulos1 =dfClean.filter(col("genres").isNull).count()
     println("Hay "+nulos1+" valores nulos en la columna genres")
 
@@ -95,6 +98,8 @@ object Modulo2 {
     println("Hay "+nulos2+" valores nulos en la columna genres")
 
     dfNulosGenres
+
+
   }
 
 

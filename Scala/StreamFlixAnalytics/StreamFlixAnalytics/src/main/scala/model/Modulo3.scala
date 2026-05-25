@@ -5,7 +5,7 @@ import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.apache.spark.sql.functions._
 import functions.functions.limpiarInfo
 
-import com.streamflix.model.Modulo5_1.loadData
+import .loadData
 
 object Modulo3 {
   def execute(spark: SparkSession): Unit = {
@@ -18,8 +18,6 @@ object Modulo3 {
     val df1 = tableSorting(joinLogsMovies(cleanLogs(dfServerlogs),cleanMovies(dfMovies)))
 
     df1.select("*").limit(10).show()
-
-
 
   }
     def loadData(spark: SparkSession, pathLog: String, pathMovies: String): (DataFrame, DataFrame) = {
@@ -35,6 +33,7 @@ object Modulo3 {
     }
 
   // TODO: Limpieza del DF server_logs.txt
+
     def cleanLogs(dfServerlogs:DataFrame):DataFrame= {
       val infoDF = dfServerlogs.filter(col("value").startsWith("[INFO]"))
 
@@ -53,6 +52,7 @@ object Modulo3 {
     }
 
   // TODO: limpieza del DF movies_metadatas
+
   def cleanMovies(dfMovies:DataFrame):DataFrame= {
 
     val moviesDF = dfMovies.withColumn("id",col("id").cast("int"))

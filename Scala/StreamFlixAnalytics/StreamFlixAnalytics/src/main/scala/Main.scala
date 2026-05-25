@@ -1,6 +1,6 @@
 package com.streamflix
 
-import model.{Modulo1, Modulo2, Modulo3, Modulo4, Modulo5, Modulo5_1}
+import model.{Modulo1, Modulo2, Modulo3, Modulo4, Modulo5}
 
 import org.apache.spark.sql.SparkSession
 
@@ -49,9 +49,6 @@ object Main {
         println("Ejecutando Módulo 5...")
         Modulo5.execute(spark)
 
-      case 6 =>
-        println("Ejecutando Módulo 5_1...")
-        Modulo5_1.execute(spark)
 
       case _ =>
         println("Opción no válida")

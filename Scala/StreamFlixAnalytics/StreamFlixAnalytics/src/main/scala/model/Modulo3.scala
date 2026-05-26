@@ -5,14 +5,12 @@ import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.apache.spark.sql.functions._
 import functions.functions.limpiarInfo
 
-import .loadData
+import com.streamflix.variables.variable.{pathLog, pathMovies}
 
 object Modulo3 {
   def execute(spark: SparkSession): Unit = {
     spark.sparkContext.setLogLevel("ERROR")
 
-    val pathLog = "src/main/resources/data/server_logs.txt"
-    val pathMovies = "src/main/resources/data/movies_metadata.csv"
     val (dfServerlogs, dfMovies) = loadData(spark, pathLog, pathMovies)
 
     val df1 = tableSorting(joinLogsMovies(cleanLogs(dfServerlogs),cleanMovies(dfMovies)))

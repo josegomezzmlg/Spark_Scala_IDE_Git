@@ -2,6 +2,7 @@ package com.streamflix
 package model
 
 import com.streamflix.functions.functions.limpiarInfo
+import com.streamflix.variables.variable.pathLog
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.apache.spark.sql.expressions.Window
 import org.apache.spark.sql.functions._
@@ -11,7 +12,6 @@ object Modulo4 {
   def execute(spark: SparkSession): Unit = {
 
     spark.sparkContext.setLogLevel("ERROR")
-    val pathLog = "src/main/resources/data/server_logs.txt"
 
     val rawDF = loadData(spark,pathLog)
     val dfDiffence = differenceTimestampPrevTime(CleanLogs(rawDF))
@@ -24,7 +24,6 @@ object Modulo4 {
     dfTop10.show()
     println("3 usuarios más adictos.")
     df3MoreAddicts.show()
-
   }
 
   def loadData(spark: SparkSession, pathLog: String): (DataFrame) = {

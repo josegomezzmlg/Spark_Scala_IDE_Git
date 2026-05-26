@@ -5,13 +5,12 @@ import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.apache.spark.sql.functions.{broadcast, col, regexp_replace, split, substring}
 import functions.functions.limpiarInfo
 
+import com.streamflix.variables.variable.{pathLog, pathMovies}
+
 object Modulo5 {
   def execute(spark: SparkSession): Unit = {
 
     spark.sparkContext.setLogLevel("ERROR")
-
-    val pathLog = "src/main/resources/data/server_logs.txt"
-    val pathMovies = "src/main/resources/data/movies_metadata.csv"
 
     val (dfServerlogs, dfMovies) = loadData(spark, pathLog, pathMovies)
 

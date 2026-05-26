@@ -1,6 +1,7 @@
 package com.streamflix
 package model
 
+import com.streamflix.variables.variable.pathMovies
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types.{LongType, StringType, StructField, StructType}
@@ -9,7 +10,7 @@ object Modulo2 {
   def execute(spark: SparkSession): Unit = {
     // Si no pongo el SetLogLevel me aparecen todas las lineas de INFO
     spark.sparkContext.setLogLevel("ERROR")
-    val pathMovies = "src/main/resources/data/movies_metadata.csv"
+
     val dfMovies = loadData(spark,pathMovies)
     val (dfNulos, dfDuplicados) = analisisNullsDuplicate(cleanMovie(dfMovies))
     val dfManejo = reemplazo(cleanMovie(dfMovies))
@@ -49,7 +50,6 @@ object Modulo2 {
     //formato string con símbolos de moneda (ej: "$12.99") y géneros separados por pipes |. Debes
     //limpiarlo y tiparlo correctamente.
     //Dataset (movies_metadata.csv):
-
 
 
     // TODO: Crear una UDF o usar expresiones select para limpiar el precio
@@ -98,7 +98,6 @@ object Modulo2 {
     println("Hay "+nulos2+" valores nulos en la columna genres")
 
     dfNulosGenres
-
 
   }
 

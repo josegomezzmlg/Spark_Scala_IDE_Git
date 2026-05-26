@@ -1,6 +1,7 @@
 package com.streamflix
 package model
 
+import com.streamflix.variables.variable.pathLog
 import org.apache.spark.{SparkConf, SparkContext}
 
 object Modulo1 {
@@ -15,7 +16,7 @@ object Modulo1 {
     sc.setLogLevel("ERROR")
 
 
-    val rdd = sc.textFile("src/main/resources/data/server_logs.txt")
+    val rdd = sc.textFile(pathLog)
 
     val rdd_filtrado = rdd.filter(linea => linea.startsWith("["))
     val rdd_filtrado_Info = rdd.filter(linea => linea.startsWith("[INFO]"))
